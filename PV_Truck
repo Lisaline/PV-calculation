@@ -100,7 +100,7 @@ ax1.set_yticks([0,15,30,45,60,75,90])
 ax1.set_xticks([90,45,15,0,-15,-45,-90])
 
 ax1.set_ylabel('Modul tilt [°]')
-ax1.set_xlabel('Modul orientation [°] East-South-West')
+ax1.set_xlabel('Modul orientation [°] West-South-East')
 ax1.set_zlabel('Modul area [*10$^3$ m$^2$]')
 
 tilt=result1[3]
