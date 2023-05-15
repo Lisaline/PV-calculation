@@ -63,6 +63,7 @@ def E_ex(breite,länge,G,time,H_sun,P_bat,eta,tilt, orientation,A):
     i=0
     P_ex=[]
     P_ov=[]
+    P_tot=0
 
     '''_________________Calculation of needed PV area for an average year_______________________''' 
         
@@ -95,6 +96,7 @@ def E_ex(breite,länge,G,time,H_sun,P_bat,eta,tilt, orientation,A):
                 P_ov.append(sum(P_out)-P_bat)
             else:
                 P_ov.append(0)
+                P_tot+=(sum(P_out)-P_bat)
             l=0
             P_out.clear()        
         #if l==24:
@@ -120,5 +122,6 @@ def E_ex(breite,länge,G,time,H_sun,P_bat,eta,tilt, orientation,A):
             #P_sum=0
         
             #l=0
-    
-    return P_ex, P_ov
+    P_grid=sum(P_ov)
+
+    return P_ex, P_ov, P_grid, P_tot

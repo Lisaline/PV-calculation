@@ -14,14 +14,14 @@ from Battery import battery
 
 '''_________________Input from user_______________________''' 
 #Location data
-breitengrad = 37.4#float(input('Please insert the latitude. [°]'))         
-längengrad = -6.0#float(input('Please insert the longitude. [°]'))
+breitengrad = 49.7#float(input('Please insert the latitude. [°]'))         
+längengrad = 8.5#float(input('Please insert the longitude. [°]'))
 jahre = 11#int(input('How many years should be taken into account? (Max. 11 years)'))
 
 #Battery data
 N_c=13#int(input('Please insert the number of charges needed in 24h.'))  #e.g. 13 charges
 N_g=1000#int(input('Please insert the grid availability.[kVA]'))        #e.g.  1000kVA
-N_t=336#float(input('Please insert the energy consumption per truck.[kWh]'))   #e.g. 336
+N_t=600#float(input('Please insert the energy consumption per truck.[kWh]'))   #e.g. 336
 
 
 #PV data
@@ -116,6 +116,9 @@ n=list(range(0,result1[6],1))
 m=[i / 1000 for i in result1[5]]
 o=[l/1000 for l in result1[7]]
 Bat=[E]*result1[6]
+P_grid=result1[8]
+P_tot=result1[9]
+
 
 fig=plt.figure(300)
 ax=fig.add_subplot(1,1,1)
@@ -129,4 +132,8 @@ ax.set_title('Timeline of energy consumption in a year at best PV position')
 ax.legend()
 plt.show()
 
+print('Total energy from the grid [kWh]:')
+print(P_grid*(-1)/1000)
+print('Total extra energy from PV [kWh]:')
+print(P_tot/1000)
 

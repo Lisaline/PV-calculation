@@ -163,6 +163,6 @@ class calculation():
             
             m=0
             o+=1
-        P_ex, P_ov =Exe.E_ex(self.breite,self.länge,self.G,self.time,self.H_sun,P_bat,self.eta,tilt,orientation,A_best)
+        P_ex, P_ov,P_grid,P_tot =Exe.E_ex(self.breite,self.länge,self.G,self.time,self.H_sun,P_bat,self.eta,tilt,orientation,A_best)
         N=len(P_ex)
-        return area, beta, phi, tilt, orientation,P_ex,N, P_ov
+        return area, beta, phi, tilt, orientation,P_ex,N, P_ov,P_grid,P_tot
