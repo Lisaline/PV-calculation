@@ -3,11 +3,11 @@ import math
 import numpy as np
 
 class battery():
-    def __init__(self,N_c,N_g,N_t):
+    def __init__(self,N_c,N_g,N_t,N_k):
         self.N_c=N_c
         self.N_g=N_g
         self.N_t=N_t
-
+        self.N_k=N_k
 
     def Bat(self):
 
@@ -22,7 +22,7 @@ class battery():
 
         '''_________________Calculating energy needed to charge trucks and battery size_______________________''' 
 
-        E=self.N_c*self.N_t*a  #*(1-self.N_g)      #total energy needed from BESS to charge trucks [kWh]
+        E=self.N_c*self.N_t*a-self.N_k          #total energy needed from BESS to charge trucks [kWh]
         C=(E*(1+b)*c)*(1+d)                     #needed energy storage capacity [kWh]
         N_u=round(C/e,0)                        #number of battery units
         N_a=N_u*A                               #total surface area [m^2]

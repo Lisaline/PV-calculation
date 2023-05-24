@@ -123,5 +123,5 @@ def E_ex(breite,länge,G,time,H_sun,P_bat,eta,tilt, orientation,A):
         
             #l=0
     P_grid=sum(P_ov)
-
+    
     return P_ex, P_ov, P_grid, P_tot

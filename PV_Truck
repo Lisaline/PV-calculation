@@ -9,19 +9,21 @@ from matplotlib import pyplot as plt
 from matplotlib import cm
 from pandas.plotting import register_matplotlib_converters
 register_matplotlib_converters()
+import sys
 from Area import calculation
 from Battery import battery
 
 '''_________________Input from user_______________________''' 
 #Location data
-breitengrad = 49.7#float(input('Please insert the latitude. [°]'))         
-längengrad = 8.5#float(input('Please insert the longitude. [°]'))
+breitengrad = 37.4#float(input('Please insert the latitude. [°]'))         
+längengrad = -6.0#float(input('Please insert the longitude. [°]'))
 jahre = 11#int(input('How many years should be taken into account? (Max. 11 years)'))
 
 #Battery data
 N_c=13#int(input('Please insert the number of charges needed in 24h.'))  #e.g. 13 charges
-N_g=1000#int(input('Please insert the grid availability.[kVA]'))        #e.g.  1000kVA
-N_t=600#float(input('Please insert the energy consumption per truck.[kWh]'))   #e.g. 336
+N_k=100#int(input('How much power can be taken from the grid constantly to charge the trucks? [kWh]')) #e.g. 1000kWh or 0kWh
+N_g=1000#int(input('Please insert the grid availability in 1h without constant power.[kVA]'))        #e.g.  1000kVA
+N_t=300#float(input('Please insert the energy consumption per truck.[kWh]'))   #e.g. 336
 
 
 #PV data
@@ -52,18 +54,22 @@ T2m = T2ms/ jahre +273.15
 
 '''_________________Calculations in classes_______________________'''            
 #Battery scenario
-B=battery(N_c,N_g,N_t)
+B=battery(N_c,N_g,N_t,N_k)
 
 result_bat=B.Bat()
 
 E=result_bat[0]               #total energy needed from BESS to charge trucks [kWh]
-C=round(result_bat[1],0)               #needed energy storage capacity [kWh]
+C=round(result_bat[1],0)      #needed energy storage capacity [kWh]
 N_u=result_bat[2]             #number of battery units
 N_a=result_bat[3]             #total surface area [m^2]
 
-#Scenario 1
-scene1=calculation(breitengrad,längengrad,G,df.time,H_sun,T2m,E,eta,N_g)
+if N_g>= E:
+   
+   sys.exit('No PV, VAWT and battery system is needed. The trucks can be charged from the grid entiredly.')
 
+
+#PV scenario
+scene1=calculation(breitengrad,längengrad,G,df.time,H_sun,T2m,E,eta,N_g)
 
 result1=scene1.PV()
 
@@ -114,7 +120,7 @@ ax2.text(0,0.6, textstr1 , fontsize = 10, bbox=props)
 
 n=list(range(0,result1[6],1))
 m=[i / 1000 for i in result1[5]]
-o=[l/1000 for l in result1[7]]
+o=[(l/1000)-N_k for l in result1[7]]
 Bat=[E]*result1[6]
 P_grid=result1[8]
 P_tot=result1[9]
@@ -122,7 +128,7 @@ P_tot=result1[9]
 
 fig=plt.figure(300)
 ax=fig.add_subplot(1,1,1)
-ax.bar(n,m,label='PV output', bottom=o)
+ax.bar(n,m,label='PV output') 
 ax.bar(n,o, label='Grid output')
 ax.plot(n,Bat,label='Required energy', color='r')
 ax.set_xticks([1,30,59,90,120,151,181,212,243,273,304,334,365])
