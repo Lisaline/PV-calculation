@@ -61,9 +61,15 @@ def E_ex(breite,länge,G,time,H_sun,P_bat,eta,tilt, orientation,A):
     tag=1
     P_out=[]
     i=0
+    q=0
     P_ex=[]
     P_ov=[]
     P_tot=0
+    ws=[2.5,3,4,5,6,7,8,9,10,11,12,13,14,15]
+    Pc=[100,200,500,900,1400,2200,3500,5000,6500,7500,8500,8500,8500,8500] #Data from https://www.braun-windturbinen.com/produkte/antaris-kleinwindanlagen/antaris-7-5-kw/
+    P_wind=0
+    P_w=[]
+    P_top=[]
 
     '''_________________Calculation of needed PV area for an average year_______________________''' 
         
@@ -84,7 +90,8 @@ def E_ex(breite,länge,G,time,H_sun,P_bat,eta,tilt, orientation,A):
                 f=0
                         
             P_out.append(eta*f*G[i]*A)        #Wh
-                        
+
+        
         l+=1
         i+=1
                     
@@ -92,13 +99,15 @@ def E_ex(breite,länge,G,time,H_sun,P_bat,eta,tilt, orientation,A):
         if l==24:
             P_ex.append(sum(P_out)) 
             
-            if sum(P_out) <= P_bat:
+            
+            if sum(P_out)<=P_bat: 
                 P_ov.append(sum(P_out)-P_bat)
             else:
                 P_ov.append(0)
                 P_tot+=(sum(P_out)-P_bat)
             l=0
-            P_out.clear()        
+            P_out.clear()
+            P_w.clear()        
         #if l==24:
             #r+=1
             #P_sum=sum(P_out)                          #Power output of PV in one day Wh

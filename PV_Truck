@@ -12,29 +12,34 @@ register_matplotlib_converters()
 import sys
 from Area import calculation
 from Battery import battery
+from Wind import wind
 
-'''_________________Input from user_______________________''' 
+'''___________________________Input from user_______________________________________''' 
 #Location data
-breitengrad = 37.4#float(input('Please insert the latitude. [°]'))         
-längengrad = -6.0#float(input('Please insert the longitude. [°]'))
+breitengrad = 53.5#float(input('Please insert the latitude. [°]'))         
+längengrad = 8.5#float(input('Please insert the longitude. [°]'))
 jahre = 11#int(input('How many years should be taken into account? (Max. 11 years)'))
 
 #Battery data
-N_c=13#int(input('Please insert the number of charges needed in 24h.'))  #e.g. 13 charges
-N_k=100#int(input('How much power can be taken from the grid constantly to charge the trucks? [kWh]')) #e.g. 1000kWh or 0kWh
+N_c=10#int(input('Please insert the number of charges needed in 24h.'))  #e.g. 13 charges
+N_k=0#int(input('How much power can be taken from the grid constantly to charge the trucks? [kWh]')) #e.g. 1000kWh or 0kWh
 N_g=1000#int(input('Please insert the grid availability in 1h without constant power.[kVA]'))        #e.g.  1000kVA
-N_t=300#float(input('Please insert the energy consumption per truck.[kWh]'))   #e.g. 336
+N_t=336#float(input('Please insert the energy consumption per truck.[kWh]'))   #e.g. 336
 
 
 #PV data
 eta=0.223#float(input('Please insert the efficiency of the PV modules [-].'))
 A_m=1.98#float(input('Please insert the area of one PV module [m^2].'))
 
-'''__________________________Average of simulation data______________________'''
+#Wind data
+WT=1#int(input('Do you want to include windturbines? (yes: 1; no: 0)'))
+
+'''__________________________Average of simulation data_____________________________'''
 
 Gs=np.zeros(8800)
 H_suns=np.zeros(8800)
 T2ms=np.zeros(8800)
+Ws = np.zeros(8800)
 
 for i in range(0,jahre):
     
@@ -47,12 +52,13 @@ for i in range(0,jahre):
       Gs[n] += Gi [n]
       H_suns[n] += df.H_sun[n]
       T2ms [n] += df.T2m[n]
+      Ws[n]+= df.WS10m[n]
     
 G= Gs/jahre
 H_sun= H_suns/jahre
 T2m = T2ms/ jahre +273.15
-
-'''_________________Calculations in classes_______________________'''            
+W = Ws/jahre
+'''___________________________Calculations in classes______________________________'''            
 #Battery scenario
 B=battery(N_c,N_g,N_t,N_k)
 
@@ -70,13 +76,17 @@ if N_g>= E:
 
 #PV scenario
 scene1=calculation(breitengrad,längengrad,G,df.time,H_sun,T2m,E,eta,N_g)
-
 result1=scene1.PV()
 
+#wind scenario
+scene2=wind(E,N_g,W,WT,df.time)
 
-'''_________________Grafic output________________________'''
+if WT==1:
+   result2=scene2.Wind()
 
+'''_____________________________________Grafic output____________________________________'''
 
+'''_________________Output PV area_______________________'''
 fig = plt.figure(100)
 fig.suptitle('Results of simulation from '+ str(2016-jahre) +' to '+ str(2016) + ' at '+ str(breitengrad) + ' , '+ str(längengrad))
 props = dict(boxstyle = 'square', facecolor = 'white', alpha = 0.5)
@@ -116,7 +126,7 @@ textstr1 = f'Min. PV area: {minA} m$^2$\nat tilt: {tilt} °\norientation: {orien
 ax2.axis('off')
 ax2.text(0,0.6, textstr1 , fontsize = 10, bbox=props)
 
-
+'''______________Output energy PV______________'''
 
 n=list(range(0,result1[6],1))
 m=[i / 1000 for i in result1[5]]
@@ -134,8 +144,28 @@ ax.plot(n,Bat,label='Required energy', color='r')
 ax.set_xticks([1,30,59,90,120,151,181,212,243,273,304,334,365])
 ax.set_xlabel('Day of the year')
 ax.set_ylabel('Energy [kWh]')
-ax.set_title('Timeline of energy consumption in a year at best PV position')
+ax.set_title('Timeline of energy harvest in a year at best PV position')
 ax.legend()
+
+
+'''____________Output energy wind____________'''
+
+r=[i / 1000 for i in result2[1]]
+s=[(l/1000)-N_k for l in result2[2]]
+Bat=[E]*result1[6]
+
+fig=plt.figure(400)
+ax=fig.add_subplot(1,1,1)
+ax.bar(n,r,label='Wind turbine output') 
+ax.bar(n,s, label='Grid output')
+ax.plot(n,Bat,label='Required energy', color='r')
+ax.set_xticks([1,30,59,90,120,151,181,212,243,273,304,334,365])
+ax.set_xlabel('Day of the year')
+ax.set_ylabel('Energy [kWh]')
+ax.set_title('Timeline of energy harvest in a year by ' +str(result2[0])+' wind turbines')
+ax.legend()
+
+
 plt.show()
 
 print('Total energy from the grid [kWh]:')

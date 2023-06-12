@@ -18,7 +18,9 @@ class calculation():
         self.B = B
         self.eta=eta
         self.N_g=N_g
-    
+        
+
+
     def PV(self):
 
         '''____________________________________Suns azimut_______________________________________'''
@@ -108,7 +110,7 @@ class calculation():
                             f=0
                         
                         P_out.append(self.eta*f*self.G[i]*A)        #Wh
-                        
+
                     l+=1
                     i+=1
                     
@@ -136,8 +138,7 @@ class calculation():
                                     i-=48
                                     tag-=2
                                     r=0
-
-                            
+  
                         p=0
                         P_sum=0
                         P_out.clear()
@@ -163,6 +164,6 @@ class calculation():
             
             m=0
             o+=1
-        P_ex, P_ov,P_grid,P_tot =Exe.E_ex(self.breite,self.länge,self.G,self.time,self.H_sun,P_bat,self.eta,tilt,orientation,A_best)
+        P_ex, P_ov,P_grid, P_tot =Exe.E_ex(self.breite,self.länge,self.G,self.time,self.H_sun,P_bat,self.eta,tilt,orientation,A_best)
         N=len(P_ex)
         return area, beta, phi, tilt, orientation,P_ex,N, P_ov,P_grid,P_tot
