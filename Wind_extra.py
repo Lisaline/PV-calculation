@@ -2,7 +2,7 @@ from datetime import timedelta
 import math
 import numpy as np
 
-def W_ex(B,N_g,W,time,N):
+def W_ex(B,N_g,W,time,N,Pc):
     l=0
     r=0
     q=0
@@ -10,8 +10,7 @@ def W_ex(B,N_g,W,time,N):
     P_bat=B*1000                         #Power needed for battery Wh
     N_g=N_g*1000
     i=0
-    ws=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
-    Pc=[0,0,100,200,500,900,1400,2200,3500,5000,6500,7500,8500,8500,8500,8500] #Data from https://www.braun-windturbinen.com/produkte/antaris-kleinwindanlagen/antaris-7-5-kw/
+    ws=list(range(26))
     P_wind=[]
     P_w=[]
     P_w_ex=[]

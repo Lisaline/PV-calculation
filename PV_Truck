@@ -32,7 +32,7 @@ eta=0.223#float(input('Please insert the efficiency of the PV modules [-].'))
 A_m=1.98#float(input('Please insert the area of one PV module [m^2].'))
 
 #Wind data
-WT=1#int(input('Do you want to include windturbines? (yes: 1; no: 0)'))
+WT=2#int(input('Do you want to include windturbines? (no: 0; VAWT 3kW: 1; HAWT 7,5kW: 2; HAWT 10kW: 3)'))
 
 '''__________________________Average of simulation data_____________________________'''
 
@@ -79,10 +79,29 @@ scene1=calculation(breitengrad,längengrad,G,df.time,H_sun,T2m,E,eta,N_g)
 result1=scene1.PV()
 
 #wind scenario
-scene2=wind(E,N_g,W,WT,df.time)
-
 if WT==1:
+
+   H=8         #height of the wind turbine hub
+   Pc=[0,0,50,100,150,250,400,600,900,1300,1750,2400,3050,3500,3750,3900,3950,4000,4000,4000,4000,4000,4000,4000,4000,4000] # Data from https://www.vertikalewindkraftanlage.de/Vertikales-Windrad/Vertikales-Windrad-GVG-3KW.html
+   scene2=wind(E,N_g,W,WT,df.time,Pc,H)
    result2=scene2.Wind()
+
+elif WT==2:
+
+   H=9.2
+   Pc=[0,0,100,200,500,900,1400,2200,3500,5000,6500,7500,8500,8500,8500,8500,0,0,0,0,0,0,0,0,0,0]  #Data from https://www.braun-windturbinen.com/produkte/antaris-kleinwindanlagen/antaris-7-5-kw/
+   scene2=wind(E,N_g,W,WT,df.time,Pc,H)
+   result2=scene2.Wind()
+
+elif WT==3:
+
+   H=12.5
+   Pc=[0,0,50,100,500,1400,2500,3800,5300,6900,8400,9900,10200,10100,10000,10000,0,0,0,0,0,0,0,0,0,0] #Data from https://www.psw-energiesysteme.com
+   scene2=wind(E,N_g,W,WT,df.time,Pc,H)
+   result2=scene2.Wind()
+
+
+
 
 '''_____________________________________Grafic output____________________________________'''
 
