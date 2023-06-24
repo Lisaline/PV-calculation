@@ -2,7 +2,7 @@ from datetime import timedelta
 import math
 import numpy as np
 
-def W_ex(B,N_g,W,time,N,Pc):
+def W_ex(B,N_g,W,time,N,Pc,H,z):
     l=0
     r=0
     q=0
@@ -17,10 +17,12 @@ def W_ex(B,N_g,W,time,N,Pc):
 
     
     while i < len(time):
-                
+
+        W2=W[i]*(math.log(H/z)/math.log(10/z))
+
         for a in ws:
 
-            if W[i]<a+1 and W[i]>=a:
+            if W2<a+1 and W2>=a:
                                 
                 P_w.append(Pc[q]*N)
             q+=1

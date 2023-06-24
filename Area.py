@@ -87,6 +87,7 @@ class calculation():
         P_bat=self.B*1000                         #Power needed for battery Wh
         self.N_g=self.N_g*1000
         i=0
+        P_w_out=[0]*380
         
 
         '''_________________Calculation of needed PV area for an average year_______________________''' 
@@ -164,6 +165,6 @@ class calculation():
             
             m=0
             o+=1
-        P_ex, P_ov,P_grid, P_tot =Exe.E_ex(self.breite,self.länge,self.G,self.time,self.H_sun,P_bat,self.eta,tilt,orientation,A_best)
+        P_ex, P_ov,P_grid, P_tot =Exe.E_ex(self.breite,self.länge,self.G,self.time,self.H_sun,P_bat,self.eta,tilt,orientation,A_best,P_w_out)
         N=len(P_ex)
         return area, beta, phi, tilt, orientation,P_ex,N, P_ov,P_grid,P_tot

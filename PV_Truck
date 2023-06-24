@@ -13,6 +13,7 @@ import sys
 from Area import calculation
 from Battery import battery
 from Wind import wind
+from Combo import combo
 
 '''___________________________Input from user_______________________________________''' 
 #Location data
@@ -31,8 +32,11 @@ N_t=336#float(input('Please insert the energy consumption per truck.[kWh]'))   #
 eta=0.223#float(input('Please insert the efficiency of the PV modules [-].'))
 A_m=1.98#float(input('Please insert the area of one PV module [m^2].'))
 
+
 #Wind data
-WT=2#int(input('Do you want to include windturbines? (no: 0; VAWT 3kW: 1; HAWT 7,5kW: 2; HAWT 10kW: 3)'))
+WT=1#int(input('Do you want to include windturbines? (no: 0; VAWT 3kW: 1; HAWT 7,5kW: 2; HAWT 10kW: 3)'))
+Y=1#int(input('Do you want to combine PV modules and windturbines? [no: 0; yes: 1]'))
+A=200#int(input('What is the maximum number of wind turbines to be installed? [-]'))
 
 '''__________________________Average of simulation data_____________________________'''
 
@@ -100,6 +104,10 @@ elif WT==3:
    scene2=wind(E,N_g,W,WT,df.time,Pc,H)
    result2=scene2.Wind()
 
+
+if Y==1:
+   scene3=combo(breitengrad,längengrad,G,df.time,H_sun,T2m,E,eta,N_g,W,WT,Pc,H,A)
+   result3=scene3.Combo()
 
 
 
@@ -184,11 +192,40 @@ ax.set_ylabel('Energy [kWh]')
 ax.set_title('Timeline of energy harvest in a year by ' +str(result2[0])+' wind turbines')
 ax.legend()
 
+if result3[11] ==1:
+
+   '''____________Output combo of PV and wind technology_________________'''
+
+   n3=list(range(0,result3[6],1))
+   m3=[i / 1000 for i in result3[5]]
+   o3=[(i/1000)-N_k for i in result3[7]]
+   r3=[i / 1000 for i in result3[10]]
+   Bat3=[E]*result3[6]
+   P_grid3=result3[8]
+   P_tot3=result3[9]
+   minA3 = np.amin(result3[0])
+   minM3 = round(minA3/A_m,0)
+
+
+   fig=plt.figure(500)
+   ax = fig.add_subplot(1, 1, 1)
+   
+
+   ax.bar(n3,m3,label='PV output') 
+   ax.bar(n3,o3, label='Grid output')
+   ax.bar(n3,r3,label='Wind turbine output')
+   ax.plot(n,Bat3,label='Required energy', color='r')
+   ax.set_xticks([1,30,59,90,120,151,181,212,243,273,304,334,365])
+   ax.set_xlabel('Day of the year')
+   ax.set_ylabel('Energy [kWh]')
+   ax.set_title('Timeline of energy harvest with '+str(minM3)+' PV modules and '+str(result3[12])+' wind turbines.')
+   ax.legend()
+
+else:
+   print('It is sufficient to use '+str(A)+' wind turbines.')
+
 
 plt.show()
 
-print('Total energy from the grid [kWh]:')
-print(P_grid*(-1)/1000)
-print('Total extra energy from PV [kWh]:')
-print(P_tot/1000)
+
 

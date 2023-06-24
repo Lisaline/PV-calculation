@@ -4,7 +4,7 @@ import numpy as np
 
 
 
-def E_ex(breite,länge,G,time,H_sun,P_bat,eta,tilt, orientation,A):
+def E_ex(breite,länge,G,time,H_sun,P_bat,eta,tilt, orientation,A,P_w_out):
 
     '''____________________________________Suns azimut_______________________________________'''
     def so(H,breite,länge,tag,time):
@@ -61,21 +61,16 @@ def E_ex(breite,länge,G,time,H_sun,P_bat,eta,tilt, orientation,A):
     tag=1
     P_out=[]
     i=0
-    q=0
     P_ex=[]
     P_ov=[]
     P_tot=0
-    ws=[2.5,3,4,5,6,7,8,9,10,11,12,13,14,15]
-    Pc=[100,200,500,900,1400,2200,3500,5000,6500,7500,8500,8500,8500,8500] #Data from https://www.braun-windturbinen.com/produkte/antaris-kleinwindanlagen/antaris-7-5-kw/
-    P_wind=0
-    P_w=[]
-    P_top=[]
+    
 
     '''_________________Calculation of needed PV area for an average year_______________________''' 
         
 
     while i < len(time):
-                    
+                   
         h_run=time[i]
 
         if G[i]<=0:
@@ -97,40 +92,20 @@ def E_ex(breite,länge,G,time,H_sun,P_bat,eta,tilt, orientation,A):
                     
                     
         if l==24:
-            P_ex.append(sum(P_out)) 
+            P_ex.append(sum(P_out)+P_w_out[r]) 
             
             
-            if sum(P_out)<=P_bat: 
-                P_ov.append(sum(P_out)-P_bat)
+            if sum(P_out)+P_w_out[r]<=P_bat: 
+                P_ov.append(sum(P_out)+P_w_out[r]-P_bat)
+
             else:
                 P_ov.append(0)
-                P_tot+=(sum(P_out)-P_bat)
+                P_tot+=(sum(P_out)+P_w_out[r]-P_bat)
             l=0
+            tag+=1
             P_out.clear()
-            P_w.clear()        
-        #if l==24:
-            #r+=1
-            #P_sum=sum(P_out)                          #Power output of PV in one day Wh
-                        
-            #if P_sum>=P_bat:
-                #P_ex.append(P_sum)                #excess power 
-                #tag+=1
-                #r=0
-                            
-            #else:
-                #if r<2:
-                    #tag+=1
-                        
-                #if r==2:
-                    #A+=1
-                    #i-=48
-                    #tag-=2
-                    #r=0
-                        
-
-            #P_sum=0
+            r+=1       
         
-            #l=0
     P_grid=sum(P_ov)
     
     return P_ex, P_ov, P_grid, P_tot

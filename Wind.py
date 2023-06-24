@@ -70,6 +70,6 @@ class wind():
                 l=0
                 p=0
                     
-        P_w_out , P_w_ex = Wex.W_ex(self.B,self.N_g,self.W,self.time,N,self.Pc)
+        P_w_out , P_w_ex = Wex.W_ex(self.B,self.N_g,self.W,self.time,N,self.Pc,self.H,z)
         
         return  N, P_w_out,P_w_ex       
