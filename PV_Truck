@@ -191,7 +191,7 @@ if WT>0:
    ax.set_ylabel('Energy [kWh]')
    
    if result2[3]==1:
-      ax.set_title('Timeline of energy harvest in a year by ' +str(result2[0])+' wind turbines (The number of WT exceeded 10000.)')
+      ax.set_title('Timeline of energy harvest in a year by ' +str(result2[0])+' wind turbines (Program stopped at 10000 wind turbines.)')
    else:
       ax.set_title('Timeline of energy harvest in a year by ' +str(result2[0])+' wind turbines')
    ax.legend()

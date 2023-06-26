@@ -64,7 +64,7 @@ class wind():
                             i-=48
                             r=0
 
-                        if N>10000:
+                        if N>=10000:
                             breaker=True
                             L=1
                             break
