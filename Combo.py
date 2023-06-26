@@ -38,8 +38,7 @@ class combo():
         P_w=[]
         P_w_out=[]
         breaker=False
-
-
+        
         while i < len(self.time):
             
             W2=self.W[i]*(math.log(self.H/z)/math.log(10/z))   
@@ -73,16 +72,17 @@ class combo():
                         if N >= self.An:
                             breaker= True
                             break
-                    if breaker:
-                        break
-                if breaker:
-                    break
-
-
                 P_wind=0
                 P_w.clear()
                 l=0
                 p=0
+                    
+            if breaker:
+                break
+                
+
+
+               
         
         P_w_out,P_w_ex= Wex.W_ex(self.B,self.N_g,self.W,self.time,N,self.Pc,self.H,z)
         
@@ -232,7 +232,7 @@ class combo():
                     m+=1  
                     B=1
                     tag=1
-                
+                    r=0
                 m=0
                 o+=1
             P_ex, P_ov,P_grid, P_tot =Exe.E_ex(self.breite,self.länge,self.G,self.time,self.H_sun,P_bat,self.eta,tilt,orientation,A_best,P_w_out)

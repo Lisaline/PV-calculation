@@ -14,7 +14,7 @@ def W_ex(B,N_g,W,time,N,Pc,H,z):
     P_wind=[]
     P_w=[]
     P_w_ex=[]
-
+    
     
     while i < len(time):
 

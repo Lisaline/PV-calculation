@@ -89,7 +89,6 @@ class calculation():
         i=0
         P_w_out=[0]*380
         
-
         '''_________________Calculation of needed PV area for an average year_______________________''' 
         for x in phi:
 
@@ -139,7 +138,6 @@ class calculation():
                                     i-=48
                                     tag-=2
                                     r=0
-  
                         p=0
                         P_sum=0
                         P_out.clear()
@@ -162,6 +160,7 @@ class calculation():
                 m+=1  
                 A=1
                 tag=1
+                r=0
             
             m=0
             o+=1

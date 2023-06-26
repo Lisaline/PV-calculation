@@ -32,10 +32,10 @@ class wind():
         ws=list(range(26))
         P_wind=0
         P_w=[]
-
+        breaker=False
+        L=0
 
         while i < len(self.time):
-            
             W2=self.W[i]*(math.log(self.H/z)/math.log(10/z))   
             for a in ws:
                 
@@ -63,13 +63,21 @@ class wind():
                             N+=1
                             i-=48
                             r=0
-  
+
+                        if N>10000:
+                            breaker=True
+                            L=1
+                            break
                     
                 P_wind=0
                 P_w.clear()
                 l=0
-                p=0
+                p=0    
+                    
+            if breaker==True:
+                break
+                    
                     
         P_w_out , P_w_ex = Wex.W_ex(self.B,self.N_g,self.W,self.time,N,self.Pc,self.H,z)
         
-        return  N, P_w_out,P_w_ex       
+        return  N, P_w_out,P_w_ex,L       
