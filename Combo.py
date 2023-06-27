@@ -84,7 +84,7 @@ class combo():
 
                
         
-        P_w_out,P_w_ex= Wex.W_ex(self.B,self.N_g,self.W,self.time,N,self.Pc,self.H,z)
+        P_w_out,P_w_ex, P_w_tot, P_w_grid= Wex.W_ex(self.B,self.N_g,self.W,self.time,N,self.Pc,self.H,z)
         
 
 

@@ -41,6 +41,7 @@ def W_ex(B,N_g,W,time,N,Pc,H,z):
             
             P_w.clear()
             l=0
-                    
+    P_w_tot=sum(P_wind)  
+    P_w_grid=sum(P_w_ex)             
         
-    return  P_wind, P_w_ex
+    return  P_wind, P_w_ex,P_w_tot, P_w_grid
