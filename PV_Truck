@@ -34,8 +34,8 @@ A_m=1.98#float(input('Please insert the area of one PV module [m^2].'))
 
 
 #Wind data
-WT=1#int(input('Do you want to include windturbines? (no: 0; VAWT 3kW: 1; HAWT 7,5kW: 2; HAWT 10kW: 3)'))
-Y=1#int(input('Do you want to combine PV modules and windturbines? [no: 0; yes: 1]'))
+WT=4#int(input('Do you want to include windturbines? (no: 0; VAWT 3kW: 1; HAWT 7,5kW: 2; HAWT 10kW: 3; HAWT 3,3MW)'))
+R=1#int(input('Do you want to combine PV modules and windturbines? [no: 0; yes: 1]'))
 A=200#int(input('What is the maximum number of wind turbines to be installed? [-]'))
 
 '''__________________________Average of simulation data_____________________________'''
@@ -104,8 +104,14 @@ elif WT==3:
    scene2=wind(E,N_g,W,WT,df.time,Pc,H)
    result2=scene2.Wind()
 
+elif WT==4:
 
-if Y==1:
+   H=119
+   Pc=[0,0,0,22000,134000,302000,552000,906000,1370000,1950000,2586000,3071000,3266000,3298000,3300000,3300000,3300000,3300000,3300000,3300000,3300000,3300000,3300000,3300000,3300000,3300000] #Data from https://www.wind-turbine-models.com/turbines/693-vestas-v112-3.3
+   scene2=wind(E,N_g,W,WT,df.time,Pc,H)
+   result2=scene2.Wind()
+
+if R==1:
    scene3=combo(breitengrad,längengrad,G,df.time,H_sun,T2m,E,eta,N_g,W,WT,Pc,H,A)
    result3=scene3.Combo()
 
@@ -217,42 +223,46 @@ if WT>0:
       ax.set_title('Timeline of energy harvest in a year by ' +str(result2[0])+' wind turbines')
    ax.legend()
 
-if result3[11] ==1:
+if R==1:
+   
+   M=result3[0]
+   print(M)
+   if M ==1:
 
-   '''____________Output combo of PV and wind technology_________________'''
+      '''____________Output combo of PV and wind technology_________________'''
 
-   n3=list(range(0,result3[6],1))
-   m3=[i / 1000 for i in result3[5]]
-   o3=[(i/1000)-N_k for i in result3[7]]
-   r3=[i / 1000 for i in result3[10]]
-   Bat3=[E]*result3[6]
-   P_grid3=round(-result3[8]/1000,0)
-   P_tot3=round(result3[9]/1000,0)
-   minA3 = np.amin(result3[0])
-   minM3 = round(minA3/A_m,0)
-   Pmin3= min(o3)
+      n3=list(range(0,result3[7],1))
+      m3=[i / 1000 for i in result3[6]]
+      o3=[(i/1000)-N_k for i in result3[8]]
+      r3=[i / 1000 for i in result3[11]]
+      Bat3=[E]*result3[7]
+      P_grid3=round(-result3[9]/1000,0)
+      P_tot3=round(result3[10]/1000,0)
+      minA3 = np.amin(result3[1])
+      minM3 = round(minA3/A_m,0)
+      Pmin3= min(o3)
 
-   fig=plt.figure(500)
-   ax = fig.add_subplot(1, 1, 1)
-   ax.bar(n3,m3,label='PV output') 
-   ax.bar(n3,o3, label='Grid output')
-   ax.bar(n3,r3,label='Wind turbine output')
-   ax.plot(n,Bat3,label='Required energy', color='r')
-   ax.set_xticks([1,30,59,90,120,151,181,212,243,273,304,334,365])
-   ax.set_xlabel('Day of the year')
-   ax.set_ylabel('Energy [kWh]')
-   ax.set_title('Timeline of energy harvest with '+str(minM3)+' PV modules and '+str(result3[12])+' wind turbines.')
-   ax.legend()
-   ax.text(181, Pmin3, 'Total grid output: '+str(P_grid3)+' kWh\nTotal grid feed: '+str(P_tot3)+' kWh', size=10,
-         ha="center", va="center",
-         bbox=dict(boxstyle="round",
-                   ec=(0.6, 0.4, 0.4),
-                   fc=(0.6, 0.8, 0.8),
-                   )
-         )
+      fig=plt.figure(500)
+      ax = fig.add_subplot(1, 1, 1)
+      ax.bar(n3,m3,label='PV output') 
+      ax.bar(n3,o3, label='Grid output')
+      ax.bar(n3,r3,label='Wind turbine output')
+      ax.plot(n,Bat3,label='Required energy', color='r')
+      ax.set_xticks([1,30,59,90,120,151,181,212,243,273,304,334,365])
+      ax.set_xlabel('Day of the year')
+      ax.set_ylabel('Energy [kWh]')
+      ax.set_title('Timeline of energy harvest with '+str(minM3)+' PV modules and '+str(result3[12])+' wind turbines.')
+      ax.legend()
+      ax.text(181, Pmin3, 'Total grid output: '+str(P_grid3)+' kWh\nTotal grid feed: '+str(P_tot3)+' kWh', size=10,
+            ha="center", va="center",
+            bbox=dict(boxstyle="round",
+                     ec=(0.6, 0.4, 0.4),
+                     fc=(0.6, 0.8, 0.8),
+                     )
+            )
 
-else:
-   print('It is sufficient to use '+str(A)+' wind turbines.')
+   else:
+      print('It is sufficient to use '+str(A)+' wind turbines.')
 
 
 plt.show()

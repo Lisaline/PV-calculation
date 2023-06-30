@@ -38,7 +38,8 @@ class combo():
         P_w=[]
         P_w_out=[]
         breaker=False
-        
+        M=2
+
         while i < len(self.time):
             
             W2=self.W[i]*(math.log(self.H/z)/math.log(10/z))   
@@ -238,9 +239,9 @@ class combo():
             P_ex, P_ov,P_grid, P_tot =Exe.E_ex(self.breite,self.länge,self.G,self.time,self.H_sun,P_bat,self.eta,tilt,orientation,A_best,P_w_out)
             
             C=len(P_ex)
-            
-            return area, beta, phi, tilt, orientation,P_ex, C, P_ov,P_grid,P_tot, P_w_out, 1, N
+            M=1
+            return M,area, beta, phi, tilt, orientation,P_ex, C, P_ov,P_grid,P_tot, P_w_out, N
 
         else:
-            return 2
+            return M, P_w_out
 
