@@ -226,7 +226,7 @@ if WT>0:
 if R==1:
    
    M=result3[0]
-   print(M)
+   
    if M ==1:
 
       '''____________Output combo of PV and wind technology_________________'''
