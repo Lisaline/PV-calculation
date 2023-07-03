@@ -27,7 +27,7 @@ class wind():
         N=1
         i=0
         z=0.8                                     #roughness length
-        P_bat=self.B*1000                         #Power needed for battery Wh
+        P_bat=self.B*1000                         #Power needed for battery [Wh]
         self.N_g=self.N_g*1000
         ws=list(range(26))
         P_wind=0

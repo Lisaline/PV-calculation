@@ -7,7 +7,7 @@ def W_ex(B,N_g,W,time,N,Pc,H,z):
     r=0
     q=0
     tag=1
-    P_bat=B*1000                         #Power needed for battery Wh
+    P_bat=B*1000                         #Power needed for battery [Wh]
     N_g=N_g*1000
     i=0
     ws=list(range(26))

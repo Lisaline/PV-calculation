@@ -26,7 +26,7 @@ class calculation():
         '''____________________________________Suns azimut_______________________________________'''
         def so(H,breite,länge,tag,time):
     
-            roh = 0.409*math.sin((2*math.pi*tag/365) -1.39)     #Sundeclination in rad
+            roh = 0.409*math.sin((2*math.pi*tag/365) -1.39)     #Sundeclination [rad]
             i,d= math.modf((länge/15))
             
             if breite <0:
@@ -74,8 +74,8 @@ class calculation():
         
         #constants
 
-        phi = [90,45,15,0,-15,-45,-90]                                    #Modul orientation east to west         
-        beta=[0,15,30,45,60,75,90]                                        #Modul tilt
+        phi = [90,45,15,0,-15,-45,-90]                                    #Modul orientation east to west [°]         
+        beta=[0,15,30,45,60,75,90]                                        #Modul tilt [°]
         area=np.zeros(shape=(7,7))
         l=0
         m=0
@@ -84,7 +84,7 @@ class calculation():
         tag=1
         P_out=[]
         A=1
-        P_bat=self.B*1000                         #Power needed for battery Wh
+        P_bat=self.B*1000                                                 #Power needed for battery [Wh]
         self.N_g=self.N_g*1000
         i=0
         P_w_out=[0]*380
@@ -109,7 +109,7 @@ class calculation():
                         if f<0:
                             f=0
                         
-                        P_out.append(self.eta*f*self.G[i]*A)        #Wh
+                        P_out.append(self.eta*f*self.G[i]*A)        #[Wh]
 
                     l+=1
                     i+=1
@@ -118,7 +118,7 @@ class calculation():
                     
                     if l==24:
                         r+=1
-                        P_sum=sum(P_out)                          #Power output of PV in one day Wh
+                        P_sum=sum(P_out)                          #Power output of PV in one day [Wh]
                         
                         for p in range(101):
                             
@@ -166,4 +166,5 @@ class calculation():
             o+=1
         P_ex, P_ov,P_grid, P_tot =Exe.E_ex(self.breite,self.länge,self.G,self.time,self.H_sun,P_bat,self.eta,tilt,orientation,A_best,P_w_out)
         N=len(P_ex)
+       
         return area, beta, phi, tilt, orientation,P_ex,N, P_ov,P_grid,P_tot

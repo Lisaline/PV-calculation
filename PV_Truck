@@ -17,15 +17,15 @@ from Combo import combo
 
 '''___________________________Input from user_______________________________________''' 
 #Location data
-breitengrad = 52.1#float(input('Please insert the latitude. [°]'))         
-längengrad = 4.3#float(input('Please insert the longitude. [°]'))
+breitengrad = 48.8#float(input('Please insert the latitude. [°]'))         
+längengrad = 9.2#float(input('Please insert the longitude. [°]'))
 jahre = 11#int(input('How many years should be taken into account? (Max. 11 years)'))
 
 #Battery data
-N_c=13#int(input('Please insert the number of charges needed in 24h.'))  #e.g. 13 charges
+N_c=13#int(input('Please insert the number of charges needed in 24h.'))                              #e.g. 13 charges
 N_k=0#int(input('How much power can be taken from the grid constantly to charge the trucks? [kWh]')) #e.g. 1000kWh or 0kWh
-N_g=1000#int(input('Please insert the grid availability in 1h without constant power.[kVA]'))        #e.g.  1000kVA
-N_t=336#float(input('Please insert the energy consumption per truck.[kWh]'))   #e.g. 336kWh
+N_g=1000#int(input('Please insert the grid availability in 1h without constant power.[kVA]'))        #e.g. 1000kVA
+N_t=336#float(input('Please insert the energy consumption per truck.[kWh]'))                         #e.g. 336kWh
 
 
 #PV data
@@ -38,7 +38,10 @@ WT=4#int(input('Do you want to include windturbines? (no: 0; VAWT 3kW: 1; HAWT 7
 R=1#int(input('Do you want to combine PV modules and windturbines? [no: 0; yes: 1]'))
 A=200#int(input('What is the maximum number of wind turbines to be installed? [-]'))
 
+
+
 '''__________________________Average of simulation data_____________________________'''
+#Data is downloaded from PVGIS for given number of years. Then an average meteorological year is calculated.
 
 Gs=np.zeros(8800)
 H_suns=np.zeros(8800)
@@ -62,6 +65,8 @@ G= Gs/jahre
 H_sun= H_suns/jahre
 T2m = T2ms/ jahre +273.15
 W = Ws/jahre
+
+
 '''___________________________Calculations in classes______________________________'''            
 #Battery scenario
 B=battery(N_c,N_g,N_t,N_k)
@@ -79,45 +84,49 @@ if N_g>= E:
 
 
 #PV scenario
-scene1=calculation(breitengrad,längengrad,G,df.time,H_sun,T2m,E,eta,N_g)
-result1=scene1.PV()
+scene1=calculation(breitengrad,längengrad,G,df.time,H_sun,T2m,E,eta,N_g) #calling class Area
+result1=scene1.PV()           
+tilt=result1[3]               #Output of best tilt of the PV panels at given location.
+orientation=result1[4]        #Output of best orientation of the PV panels at given location.
+
 
 #wind scenario
 if WT==1:
 
-   H=8         #height of the wind turbine hub
+   H=8         #height of the wind turbine hub [m]
    Pc=[0,0,50,100,150,250,400,600,900,1300,1750,2400,3050,3500,3750,3900,3950,4000,4000,4000,4000,4000,4000,4000,4000,4000] # Data from https://www.vertikalewindkraftanlage.de/Vertikales-Windrad/Vertikales-Windrad-GVG-3KW.html
-   scene2=wind(E,N_g,W,WT,df.time,Pc,H)
+   scene2=wind(E,N_g,W,WT,df.time,Pc,H) #calling class Wind
    result2=scene2.Wind()
 
 elif WT==2:
 
-   H=9.2
+   H=9.2       #height of the wind turbine hub [m]
    Pc=[0,0,100,200,500,900,1400,2200,3500,5000,6500,7500,8500,8500,8500,8500,0,0,0,0,0,0,0,0,0,0]  #Data from https://www.braun-windturbinen.com/produkte/antaris-kleinwindanlagen/antaris-7-5-kw/
-   scene2=wind(E,N_g,W,WT,df.time,Pc,H)
+   scene2=wind(E,N_g,W,WT,df.time,Pc,H) #calling class Wind
    result2=scene2.Wind()
 
 elif WT==3:
 
-   H=12.5
+   H=12.5      #height of the wind turbine hub [m]
    Pc=[0,0,50,100,500,1400,2500,3800,5300,6900,8400,9900,10200,10100,10000,10000,0,0,0,0,0,0,0,0,0,0] #Data from https://www.psw-energiesysteme.com
-   scene2=wind(E,N_g,W,WT,df.time,Pc,H)
+   scene2=wind(E,N_g,W,WT,df.time,Pc,H) #calling class Wind
    result2=scene2.Wind()
 
 elif WT==4:
 
-   H=119
+   H=119       #height of the wind turbine hub [m]
    Pc=[0,0,0,22000,134000,302000,552000,906000,1370000,1950000,2586000,3071000,3266000,3298000,3300000,3300000,3300000,3300000,3300000,3300000,3300000,3300000,3300000,3300000,3300000,3300000] #Data from https://www.wind-turbine-models.com/turbines/693-vestas-v112-3.3
-   scene2=wind(E,N_g,W,WT,df.time,Pc,H)
+   scene2=wind(E,N_g,W,WT,df.time,Pc,H) #calling class Wind
    result2=scene2.Wind()
 
 if R==1:
-   scene3=combo(breitengrad,längengrad,G,df.time,H_sun,T2m,E,eta,N_g,W,WT,Pc,H,A)
+   scene3=combo(breitengrad,längengrad,G,df.time,H_sun,T2m,E,eta,N_g,W,WT,Pc,H,A, tilt, orientation)  #calling class Combo
    result3=scene3.Combo()
 
 
 
 '''_____________________________________Grafic output____________________________________'''
+#Output generation 
 
 '''_________________Output PV area_______________________'''
 fig = plt.figure(100)
@@ -151,9 +160,6 @@ ax1.set_xticks([90,45,15,0,-15,-45,-90])
 ax1.set_ylabel('Modul tilt [°]')
 ax1.set_xlabel('Modul orientation [°] West-South-East')
 ax1.set_zlabel('Modul area [*10$^3$ m$^2$]')
-
-tilt=result1[3]
-orientation=result1[4]
 
 textstr1 = f'Min. PV area: {minA} m$^2$\nat tilt: {tilt} °\norientation: {orientation} °\nNumber of modules: {minM}\nEnergy storage capacity: {C} kWh\nNumber of battery units: {N_u}\nSurface area of battery: {N_a} m$^2$'
 ax2.axis('off')
@@ -226,19 +232,19 @@ if WT>0:
 if R==1:
    
    M=result3[0]
-   
+
    if M ==1:
 
       '''____________Output combo of PV and wind technology_________________'''
 
-      n3=list(range(0,result3[7],1))
-      m3=[i / 1000 for i in result3[6]]
-      o3=[(i/1000)-N_k for i in result3[8]]
-      r3=[i / 1000 for i in result3[11]]
-      Bat3=[E]*result3[7]
-      P_grid3=round(-result3[9]/1000,0)
-      P_tot3=round(result3[10]/1000,0)
-      minA3 = np.amin(result3[1])
+      n3=list(range(0,result3[2],1))
+      m3=[i / 1000 for i in result3[1]]
+      o3=[(i/1000)-N_k for i in result3[3]]
+      r3=[i / 1000 for i in result3[6]]
+      Bat3=[E]*result3[2]
+      P_grid3=round(-result3[4]/1000,0)
+      P_tot3=round(result3[5]/1000,0)
+      minA3 = result3[8]
       minM3 = round(minA3/A_m,0)
       Pmin3= min(o3)
 
@@ -251,7 +257,7 @@ if R==1:
       ax.set_xticks([1,30,59,90,120,151,181,212,243,273,304,334,365])
       ax.set_xlabel('Day of the year')
       ax.set_ylabel('Energy [kWh]')
-      ax.set_title('Timeline of energy harvest with '+str(minM3)+' PV modules and '+str(result3[12])+' wind turbines.')
+      ax.set_title('Timeline of energy harvest with '+str(minM3)+' PV modules and '+str(result3[7])+' wind turbines.')
       ax.legend()
       ax.text(181, Pmin3, 'Total grid output: '+str(P_grid3)+' kWh\nTotal grid feed: '+str(P_tot3)+' kWh', size=10,
             ha="center", va="center",
