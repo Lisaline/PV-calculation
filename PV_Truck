@@ -1,6 +1,7 @@
+
 '''________________________Main program_____________________________________'''
 
-#Bibliotheken
+#Libraries
 import pandas as pd
 from datetime import datetime as dt
 import math
@@ -14,264 +15,555 @@ from Area import calculation
 from Battery import battery
 from Wind import wind
 from Combo import combo
+from tkinter import *
+from tkinter import ttk
 
-'''___________________________Input from user_______________________________________''' 
+
+
+
+
+# Creating tkinter window
+Input_user = Tk()
+Input_user.title('User_Input')
+Input_user.geometry('700x450')
+Input_user.iconbitmap(r'Femtec_Logo_icon.ico')
+
+
+ 
+
+myLable = Label(Input_user, text= "Enter the below inputs")
+myLable.pack()
+
+
+
+
+'''___________________________Input from use for experienced users_______________________________________''' 
 #Location data
-breitengrad = 48.8#float(input('Please insert the latitude. [°]'))         
-längengrad = 9.2#float(input('Please insert the longitude. [°]'))
-jahre = 11#int(input('How many years should be taken into account? (Max. 11 years)'))
+#breitengrad = float(input('Please insert the latitude. [°]'))         
+#längengrad = float(input('Please insert the longitude. [°]'))
+#jahre = (input('How many years should be taken into account? (Max. 11 years)'))
 
 #Battery data
-N_c=13#int(input('Please insert the number of charges needed in 24h.'))                              #e.g. 13 charges
-N_k=0#int(input('How much power can be taken from the grid constantly to charge the trucks? [kWh]')) #e.g. 1000kWh or 0kWh
-N_g=1000#int(input('Please insert the grid availability in 1h without constant power.[kVA]'))        #e.g. 1000kVA
-N_t=336#float(input('Please insert the energy consumption per truck.[kWh]'))                         #e.g. 336kWh
+#N_C=int(input('Please insert the number of charges needed in 24h.'))                              #e.g. 13 charges
+#N_k=int(input('How much power can be taken from the grid constantly to charge the trucks? [kWh]')) #e.g. 1000kWh or 0kWh
+#N_g=int(input('Please insert the grid availability in 1h without constant power.[kVA]'))        #e.g. 1000kVA
+#N_t=float(input('Please insert the energy consumption per truck.[kWh]'))                         #e.g. 336kWh
 
 
 #PV data
-eta=0.223#float(input('Please insert the efficiency of the PV modules [-].'))
-A_m=1.98#float(input('Please insert the area of one PV module [m^2].'))
+#eta=float(input('Please insert the efficiency of the PV modules [-].'))
+#A_m=float(input('Please insert the area of one PV module [m^2].'))
 
 
 #Wind data
-WT=4#int(input('Do you want to include windturbines? (no: 0; VAWT 3kW: 1; HAWT 7,5kW: 2; HAWT 10kW: 3; HAWT 3,3MW)'))
-R=1#int(input('Do you want to combine PV modules and windturbines? [no: 0; yes: 1]'))
-A=200#int(input('What is the maximum number of wind turbines to be installed? [-]'))
+#WT=int(input('Do you want to include windturbines? (no: 0; VAWT 3kW: 1; HAWT 7,5kW: 2; HAWT 10kW: 3; HAWT 3,3MW)'))
+#R=int(input('Do you want to combine PV modules and windturbines? [no: 0; yes: 1]'))
+#A=int(input('What is the maximum number of wind turbines to be installed? [-]'))
 
 
 
 '''__________________________Average of simulation data_____________________________'''
 #Data is downloaded from PVGIS for given number of years. Then an average meteorological year is calculated.
 
-Gs=np.zeros(8800)
-H_suns=np.zeros(8800)
-T2ms=np.zeros(8800)
-Ws = np.zeros(8800)
-
-for i in range(0,jahre):
+def submit():
+   print("importing user interface")
+   # breitengrad_input = breitengrad.get()
+   print("importing 2 user interface")
+   breitengrad = float(first_name_entry.get())
+   längengrad = float(last_name_entry.get())
+   jahre = int(jahre_entry.get())
+   #print(breitengrad,längengrad, jahre)
+   N_c = int(N_c_entry.get())
+   N_g = float(N_g_entry.get())
+   N_t = float(N_t_entry.get())
+   #print(N_c,N_g, N_t)
+   eta = float(eta_entry.get())
+   A_m = float(A_m_entry.get())
+   #Wind data
+   A = int(A_entry.get())
+   N_k = float(N_k_entry.get())
     
-   df=pd.read_csv('https://re.jrc.ec.europa.eu/api/v5_2/seriescalc?lat='+str(breitengrad)+'&lon='+str(längengrad)+'&startyear='+str(2016-i)+'&endyear='+str(2016-i)+'&outputformat=csv',sep=',',header=6)
-   df = df.dropna()
-   df.time = df.apply(lambda row: dt.strptime(row.time,'%Y%m%d:%H%M'), axis=1)
-   Gi=df['G(i)'].astype(np.float64).to_numpy()
+   if R_entry_Combobox.get() == "No":
+     R = 0
+      
+   elif R_entry_Combobox.get() == "Yes":
+     R = 1
     
-   for n in range (0,len(df.time)):
-      Gs[n] += Gi [n]
-      H_suns[n] += df.H_sun[n]
-      T2ms [n] += df.T2m[n]
-      Ws[n]+= df.WS10m[n]
-    
-G= Gs/jahre
-H_sun= H_suns/jahre
-T2m = T2ms/ jahre +273.15
-W = Ws/jahre
-
-
-'''___________________________Calculations in classes______________________________'''            
-#Battery scenario
-B=battery(N_c,N_g,N_t,N_k)
-
-result_bat=B.Bat()
-
-E=result_bat[0]               #total energy needed from BESS to charge trucks [kWh]
-C=round(result_bat[1],0)      #needed energy storage capacity [kWh]
-N_u=result_bat[2]             #number of battery units
-N_a=result_bat[3]             #total surface area [m^2]
-
-if N_g>= E:
+   if WT_entry_Combobox.get() == "No":
+     WT = 0
    
-   sys.exit('No PV, VAWT and battery system is needed. The trucks can be charged from the grid entiredly.')
+   elif WT_entry_Combobox.get() == "VAWT 3kW":
+      WT = 1
+   
+   elif WT_entry_Combobox.get() == "HAWT 7.5kW":
+     WT = 2
+   
+   elif WT_entry_Combobox.get() == "HAWT 10kW":
+     WT = 3
+
+   elif WT_entry_Combobox.get() == "HAWT 3.3MW":
+     WT = 4
+	
+	
+   Gs=np.zeros(8800)
+   H_suns=np.zeros(8800)
+   T2ms=np.zeros(8800)
+   Ws = np.zeros(8800)
+    
+        
+
+   for i in range(0,jahre):
+    # Read data from PVGIS API for a specific year
+      df=pd.read_csv('https://re.jrc.ec.europa.eu/api/v5_2/seriescalc?lat='+str(breitengrad)+'&lon='+str(längengrad)+'&startyear='+str(2016-i)+'&endyear='+str(2016-i)+'&outputformat=csv',sep=',',header=6)
+      df = df.dropna()
+      df.time = df.apply(lambda row: dt.strptime(row.time,'%Y%m%d:%H%M'), axis=1)
+      Gi=df['G(i)'].astype(np.float64).to_numpy()
+
+      # Calculate the average values for each meteorological parameter 
+      for n in range (0,len(df.time)):
+        Gs[n] += Gi [n]
+        H_suns[n] += df.H_sun[n]
+        T2ms [n] += df.T2m[n]
+        Ws[n]+= df.WS10m[n]
+    
+   G= Gs/jahre
+   H_sun= H_suns/jahre
+   T2m = T2ms/ jahre +273.15
+   W = Ws/jahre
 
 
-#PV scenario
-scene1=calculation(breitengrad,längengrad,G,df.time,H_sun,T2m,E,eta,N_g) #calling class Area
-result1=scene1.PV()           
-tilt=result1[3]               #Output of best tilt of the PV panels at given location.
-orientation=result1[4]        #Output of best orientation of the PV panels at given location.
+   '''___________________________Calculations in classes______________________________'''            
+   #Battery scenario
+   B=battery(N_c,N_g,N_t,N_k)
+
+   result_bat=B.Bat()
+
+   E=result_bat[0]               #total energy needed from BESS to charge trucks [kWh]
+   C=round(result_bat[1],0)      #needed energy storage capacity [kWh]
+   N_u=result_bat[2]             #number of battery units
+   N_a=result_bat[3]             #total surface area [m^2]
+
+   if N_g>= E:
+   
+      sys.exit('No PV, VAWT and battery system is needed. The trucks can be charged from the grid entiredly.')
 
 
-#wind scenario
-if WT==1:
-
-   H=8         #height of the wind turbine hub [m]
-   Pc=[0,0,50,100,150,250,400,600,900,1300,1750,2400,3050,3500,3750,3900,3950,4000,4000,4000,4000,4000,4000,4000,4000,4000] # Data from https://www.vertikalewindkraftanlage.de/Vertikales-Windrad/Vertikales-Windrad-GVG-3KW.html
-   scene2=wind(E,N_g,W,WT,df.time,Pc,H) #calling class Wind
-   result2=scene2.Wind()
-
-elif WT==2:
-
-   H=9.2       #height of the wind turbine hub [m]
-   Pc=[0,0,100,200,500,900,1400,2200,3500,5000,6500,7500,8500,8500,8500,8500,0,0,0,0,0,0,0,0,0,0]  #Data from https://www.braun-windturbinen.com/produkte/antaris-kleinwindanlagen/antaris-7-5-kw/
-   scene2=wind(E,N_g,W,WT,df.time,Pc,H) #calling class Wind
-   result2=scene2.Wind()
-
-elif WT==3:
-
-   H=12.5      #height of the wind turbine hub [m]
-   Pc=[0,0,50,100,500,1400,2500,3800,5300,6900,8400,9900,10200,10100,10000,10000,0,0,0,0,0,0,0,0,0,0] #Data from https://www.psw-energiesysteme.com
-   scene2=wind(E,N_g,W,WT,df.time,Pc,H) #calling class Wind
-   result2=scene2.Wind()
-
-elif WT==4:
-
-   H=119       #height of the wind turbine hub [m]
-   Pc=[0,0,0,22000,134000,302000,552000,906000,1370000,1950000,2586000,3071000,3266000,3298000,3300000,3300000,3300000,3300000,3300000,3300000,3300000,3300000,3300000,3300000,3300000,3300000] #Data from https://www.wind-turbine-models.com/turbines/693-vestas-v112-3.3
-   scene2=wind(E,N_g,W,WT,df.time,Pc,H) #calling class Wind
-   result2=scene2.Wind()
-
-if R==1:
-   scene3=combo(breitengrad,längengrad,G,df.time,H_sun,T2m,E,eta,N_g,W,WT,Pc,H,A, tilt, orientation)  #calling class Combo
-   result3=scene3.Combo()
+       #PV scenario
+   scene1=calculation(breitengrad,längengrad,G,df.time,H_sun,T2m,E,eta,N_g) #calling class Area
+   result1=scene1.PV()           
+   tilt=result1[3]               #Output of best tilt of the PV panels at given location.
+   orientation=result1[4]        #Output of best orientation of the PV panels at given location.
 
 
+        #wind scenario
+   if WT==1:
 
-'''_____________________________________Grafic output____________________________________'''
-#Output generation 
+      H=8         #height of the wind turbine hub [m]
+      Pc=[0,0,50,100,150,250,400,600,900,1300,1750,2400,3050,3500,3750,3900,3950,4000,4000,4000,4000,4000,4000,4000,4000,4000] # Data from https://www.vertikalewindkraftanlage.de/Vertikales-Windrad/Vertikales-Windrad-GVG-3KW.html
+      scene2=wind(E,N_g,W,WT,df.time,Pc,H) #calling class Wind
+      result2=scene2.Wind()
 
-'''_________________Output PV area_______________________'''
-fig = plt.figure(100)
-fig.suptitle('Results of simulation from '+ str(2016-jahre) +' to '+ str(2016) + ' at '+ str(breitengrad) + ' , '+ str(längengrad))
-props = dict(boxstyle = 'square', facecolor = 'white', alpha = 0.5)
+   elif WT==2:
 
-ax1 = fig.add_subplot(1, 2, 1, projection='3d')
-ax2 = fig.add_subplot(1, 2, 2)
-Z=np.array(result1[0]/1000)
+      H=9.2       #height of the wind turbine hub [m]
+      Pc=[0,0,100,200,500,900,1400,2200,3500,5000,6500,7500,8500,8500,8500,8500,0,0,0,0,0,0,0,0,0,0]  #Data from https://www.braun-windturbinen.com/produkte/antaris-kleinwindanlagen/antaris-7-5-kw/
+      scene2=wind(E,N_g,W,WT,df.time,Pc,H) #calling class Wind
+      result2=scene2.Wind()
 
-y=np.array(result1[1])
-x=np.array(result1[2])
-_x,_y = np.meshgrid(x,y)
-X,Y = _x.ravel(), _y.ravel()
+   elif WT==3:
 
-minA= np.amin(Z)*1000
-top=Z.ravel()
-minM= round(minA/A_m,0)
-width = depth = 10
+      H=12.5      #height of the wind turbine hub [m]
+      Pc=[0,0,50,100,500,1400,2500,3800,5300,6900,8400,9900,10200,10100,10000,10000,0,0,0,0,0,0,0,0,0,0] #Data from https://www.psw-energiesysteme.com
+      scene2=wind(E,N_g,W,WT,df.time,Pc,H) #calling class Wind
+      result2=scene2.Wind()
 
-cmap = cm.get_cmap('jet')
-max_height = np.max(top)  
-min_height = np.min(top)
-rgba = [cmap((k-min_height)/max_height) for k in top]
+   elif WT==4:
 
-ax1.bar3d(X-width/2., Y-width/2., 0, width, depth, top, color= rgba)
+      H=119       #height of the wind turbine hub [m]
+      Pc=[0,0,0,22000,134000,302000,552000,906000,1370000,1950000,2586000,3071000,3266000,3298000,3300000,3300000,3300000,3300000,3300000,3300000,3300000,3300000,3300000,3300000,3300000,3300000] #Data from https://www.wind-turbine-models.com/turbines/693-vestas-v112-3.3
+      scene2=wind(E,N_g,W,WT,df.time,Pc,H) #calling class Wind
+      result2=scene2.Wind()
 
-ax1.set_yticks([0,15,30,45,60,75,90])
-ax1.set_xticks([90,45,15,0,-15,-45,-90])
-
-ax1.set_ylabel('Modul tilt [°]')
-ax1.set_xlabel('Modul orientation [°] West-South-East')
-ax1.set_zlabel('Modul area [*10$^3$ m$^2$]')
-
-textstr1 = f'Min. PV area: {minA} m$^2$\nat tilt: {tilt} °\norientation: {orientation} °\nNumber of modules: {minM}\nEnergy storage capacity: {C} kWh\nNumber of battery units: {N_u}\nSurface area of battery: {N_a} m$^2$'
-ax2.axis('off')
-ax2.text(0,0.6, textstr1 , fontsize = 10, bbox=props)
-
-'''______________Output energy PV______________'''
-
-n=list(range(0,result1[6],1))
-m=[i / 1000 for i in result1[5]]
-o=[(l/1000)-N_k for l in result1[7]]
-Bat=[E]*result1[6]
-P_grid=round(-result1[8]/1000,0)
-P_tot=round(result1[9]/1000,0)
-Pmin1=min(o)
-
-fig=plt.figure(300)
-ax=fig.add_subplot(1,1,1)
-ax.bar(n,m,label='PV output') 
-ax.bar(n,o, label='Grid output')
-ax.plot(n,Bat,label='Required energy', color='r')
-ax.set_xticks([1,30,59,90,120,151,181,212,243,273,304,334,365])
-ax.set_xlabel('Day of the year')
-ax.set_ylabel('Energy [kWh]')
-ax.set_title('Timeline of energy harvest in a year at best PV position')
-ax.legend()
-ax.text(181, Pmin1, 'Total grid output: '+str(P_grid)+' kWh\nTotal grid feed: '+str(P_tot)+' kWh', size=10,
-         ha="center", va="center",
-         bbox=dict(boxstyle="round",
-                   ec=(0.6, 0.4, 0.4),
-                   fc=(0.6, 0.8, 0.8),
-                   )
-         )
+   if R==1:
+      scene3=combo(breitengrad,längengrad,G,df.time,H_sun,T2m,E,eta,N_g,W,WT,Pc,H,A, tilt, orientation)  #calling class Combo
+      result3=scene3.Combo()
 
 
 
-if WT>0:
-   '''____________Output energy wind____________'''
+   '''_____________________________________Grafic output____________________________________'''
+    #Output generation 
 
-   r=[i / 1000 for i in result2[1]]
-   s=[(l/1000)-N_k for l in result2[2]]
-   Bat=[E]*result1[6]  
-   P_w_tot1=round(result2[4]/1000,0)
-   P_w_grid1=round(-result2[5]/1000,0)
-   Pmin2=min(s)
+   '''_________________Output PV area_______________________'''
+   fig = plt.figure(100)
+   fig.suptitle('Results of simulation from '+ str(2016-jahre) +' to '+ str(2016) + ' at '+ str(breitengrad) + ' , '+ str(längengrad))
+   props = dict(boxstyle = 'square', facecolor = 'white', alpha = 0.5)
 
+   ax1 = fig.add_subplot(1, 2, 1, projection='3d')
+   ax2 = fig.add_subplot(1, 2, 2)
+   Z=np.array(result1[0]/1000)
 
-   fig=plt.figure(400)
+   y=np.array(result1[1])
+   x=np.array(result1[2])
+   _x,_y = np.meshgrid(x,y)
+   X,Y = _x.ravel(), _y.ravel()
+
+   minA= np.amin(Z)*1000
+   top=Z.ravel()
+   minM= round(minA/A_m,0)
+   width = depth = 10
+
+   cmap = cm.get_cmap('jet')
+   max_height = np.max(top)  
+   min_height = np.min(top)
+   rgba = [cmap((k-min_height)/max_height) for k in top]
+
+   ax1.bar3d(X-width/2., Y-width/2., 0, width, depth, top, color= rgba)
+
+   ax1.set_yticks([0,15,30,45,60,75,90])
+   ax1.set_xticks([90,45,15,0,-15,-45,-90])
+
+   ax1.set_ylabel('Modul tilt [°]')
+   ax1.set_xlabel('Modul orientation [°] West-South-East')
+   ax1.set_zlabel('Modul area [*10$^3$ m$^2$]')
+
+   textstr1 = f'Min. PV area: {minA} m$^2$\nat tilt: {tilt} °\norientation: {orientation} °\nNumber of modules: {minM}\nEnergy storage capacity: {C} kWh\nNumber of battery units: {N_u}\nSurface area of battery: {N_a} m$^2$'
+   ax2.axis('off')
+   ax2.text(0,0.6, textstr1 , fontsize = 10, bbox=props)
+
+   '''______________Output energy PV______________'''
+
+   n=list(range(0,result1[6],1))
+   m=[i / 1000 for i in result1[5]]
+   o=[(l/1000)-N_k for l in result1[7]]
+   Bat=[E]*result1[6]
+   P_grid=round(-result1[8]/1000,0)
+   P_tot=round(result1[9]/1000,0)
+   Pmin1=min(o)
+
+   fig=plt.figure(300)
    ax=fig.add_subplot(1,1,1)
-   ax.bar(n,r,label='Wind turbine output') 
-   ax.bar(n,s, label='Grid output')
+   ax.bar(n,m,label='PV output') 
+   ax.bar(n,o, label='Grid output')
    ax.plot(n,Bat,label='Required energy', color='r')
    ax.set_xticks([1,30,59,90,120,151,181,212,243,273,304,334,365])
    ax.set_xlabel('Day of the year')
    ax.set_ylabel('Energy [kWh]')
-   ax.text(181, Pmin2, 'Total grid output: '+str(P_w_grid1)+' kWh\nTotal grid feed: '+str(P_w_tot1)+' kWh', size=10,
-         ha="center", va="center",
-         bbox=dict(boxstyle="round",
-                   ec=(0.6, 0.4, 0.4),
-                   fc=(0.6, 0.8, 0.8),
-                   )
-         )
-
-
-   if result2[3]==1:
-      ax.set_title('Timeline of energy harvest in a year by ' +str(result2[0])+' wind turbines (Program stopped at 10000 wind turbines.)')
-   else:
-      ax.set_title('Timeline of energy harvest in a year by ' +str(result2[0])+' wind turbines')
+   ax.set_title('Timeline of energy harvest in a year at best PV position')
    ax.legend()
+   ax.text(181, Pmin1, 'Total grid output: '+str(P_grid)+' kWh\nTotal grid feed: '+str(P_tot)+' kWh', size=10,
+      ha="center", va="center",
+      bbox=dict(boxstyle="round",
+               ec=(0.6, 0.4, 0.4),
+               fc=(0.6, 0.8, 0.8),
+              )
+           )
 
-if R==1:
-   
-   M=result3[0]
 
-   if M ==1:
 
-      '''____________Output combo of PV and wind technology_________________'''
+   if WT>0:
+      '''____________Output energy wind____________'''
 
-      n3=list(range(0,result3[2],1))
-      m3=[i / 1000 for i in result3[1]]
-      o3=[(i/1000)-N_k for i in result3[3]]
-      r3=[i / 1000 for i in result3[6]]
-      Bat3=[E]*result3[2]
-      P_grid3=round(-result3[4]/1000,0)
-      P_tot3=round(result3[5]/1000,0)
-      minA3 = result3[8]
-      minM3 = round(minA3/A_m,0)
-      Pmin3= min(o3)
+      r=[i / 1000 for i in result2[1]]
+      s=[(l/1000)-N_k for l in result2[2]]
+      Bat=[E]*result1[6]  
+      P_w_tot1=round(result2[4]/1000,0)
+      P_w_grid1=round(-result2[5]/1000,0)
+      Pmin2=min(s)
 
-      fig=plt.figure(500)
-      ax = fig.add_subplot(1, 1, 1)
-      ax.bar(n3,m3,label='PV output') 
-      ax.bar(n3,o3, label='Grid output')
-      ax.bar(n3,r3,label='Wind turbine output')
-      ax.plot(n,Bat3,label='Required energy', color='r')
+
+      fig=plt.figure(400)
+      ax=fig.add_subplot(1,1,1)
+      ax.bar(n,r,label='Wind turbine output') 
+      ax.bar(n,s, label='Grid output')
+      ax.plot(n,Bat,label='Required energy', color='r')
       ax.set_xticks([1,30,59,90,120,151,181,212,243,273,304,334,365])
       ax.set_xlabel('Day of the year')
       ax.set_ylabel('Energy [kWh]')
-      ax.set_title('Timeline of energy harvest with '+str(minM3)+' PV modules and '+str(result3[7])+' wind turbines.')
-      ax.legend()
-      ax.text(181, Pmin3, 'Total grid output: '+str(P_grid3)+' kWh\nTotal grid feed: '+str(P_tot3)+' kWh', size=10,
-            ha="center", va="center",
-            bbox=dict(boxstyle="round",
-                     ec=(0.6, 0.4, 0.4),
-                     fc=(0.6, 0.8, 0.8),
-                     )
+      ax.text(181, Pmin2, 'Total grid output: '+str(P_w_grid1)+' kWh\nTotal grid feed: '+str(P_w_tot1)+' kWh', size=10,
+           ha="center", va="center",
+           bbox=dict(boxstyle="round",
+                   ec=(0.6, 0.4, 0.4),
+                   fc=(0.6, 0.8, 0.8),
+                    )
             )
 
-   else:
-      print('It is sufficient to use '+str(A)+' wind turbines.')
+
+      if result2[3]==1:
+         ax.set_title('Timeline of energy harvest in a year by ' +str(result2[0])+' wind turbines (Program stopped at 10000 wind turbines.)')
+      else:
+         ax.set_title('Timeline of energy harvest in a year by ' +str(result2[0])+' wind turbines')
+      ax.legend()
+
+      if R==1:
+   
+         M=result3[0]
+
+         if M ==1:
+
+            '''____________Output combo of PV and wind technology_________________'''
+
+            n3=list(range(0,result3[2],1))
+            m3=[i / 1000 for i in result3[1]]
+            o3=[(i/1000)-N_k for i in result3[3]]
+            r3=[i / 1000 for i in result3[6]]
+            Bat3=[E]*result3[2]
+            P_grid3=round(-result3[4]/1000,0)
+            P_tot3=round(result3[5]/1000,0)
+            minA3 = result3[8]
+            minM3 = round(minA3/A_m,0)
+            Pmin3= min(o3)
+
+            fig=plt.figure(500)
+            ax = fig.add_subplot(1, 1, 1)
+            ax.bar(n3,m3,label='PV output') 
+            ax.bar(n3,o3, label='Grid output')
+            ax.bar(n3,r3,label='Wind turbine output')
+            ax.plot(n,Bat3,label='Required energy', color='r')
+            ax.set_xticks([1,30,59,90,120,151,181,212,243,273,304,334,365])
+            ax.set_xlabel('Day of the year')
+            ax.set_ylabel('Energy [kWh]')
+            ax.set_title('Timeline of energy harvest with '+str(minM3)+' PV modules and '+str(result3[7])+' wind turbines.')
+            ax.legend()
+            ax.text(181, Pmin3, 'Total grid output: '+str(P_grid3)+' kWh\nTotal grid feed: '+str(P_tot3)+' kWh', size=10,
+                  ha="center", va="center",
+                  bbox=dict(boxstyle="round",
+                      ec=(0.6, 0.4, 0.4),
+                      fc=(0.6, 0.8, 0.8),
+                      )
+             )
+      else:
+        print('It is sufficient to use '+str(A)+' wind turbines.')
+
+   plt.show()
 
 
-plt.show()
+
+
+
+'''______________________________GUI creation_____________________________'''
+
+
+frame =Frame(Input_user)   #creating frame
+frame.pack()
+
+
+
+def btnInN_CBrowseClick():      # defining button for decription of "Number of charges needed in 24h"
+        Help = Tk()
+        Help.title('User_Input')
+        Help.geometry('500x100')
+        Help.iconbitmap(r'Femtec_Logo_icon.ico')
+        myLable = Label(Help, text= "Please insert the number of charges needed in 24h. [-]")
+        myLable.pack()
+        Help.mainloop() 
+        
+def btnInN_gBrowseClick():     # defining button for description of "grid availability in 1h without constant power"
+        Help = Tk()
+        Help.title('User_Input')
+        Help.geometry('500x100')
+        Help.iconbitmap(r'Femtec_Logo_icon.ico')
+        myLable = Label(Help, text= "Please insert the grid availability in 1h without constant power.[kVA]")
+        myLable.pack()
+        Help.mainloop() 
+        
+def btnInN_tBrowseClick():    # defining button for description of "energy consumption per truck.[kWh]"
+        Help = Tk()
+        Help.title('User_Input')
+        Help.geometry('500x100')
+        Help.iconbitmap(r'Femtec_Logo_icon.ico')
+        myLable = Label(Help, text= "Please insert the energy consumption per truck.[kWh]")
+        myLable.pack()
+        Help.mainloop() 
+        
+def eta_CBrowseClick():     # defining button for description of "Efficiency of the PV"
+        Help = Tk()
+        Help.title('User_Input')
+        Help.geometry('500x100')
+        Help.iconbitmap(r'Femtec_Logo_icon.ico')
+        myLable = Label(Help, text= "Please insert the efficiency of the PV modules. [-]")
+        myLable.pack()
+        Help.mainloop() 
+        
+        
+def A_m_CBrowseClick():  # defining button for description of "Area of one PV module [m^2]"
+        Help = Tk()
+        Help.title('User_Input')
+        Help.geometry('500x100')
+        Help.iconbitmap(r'Femtec_Logo_icon.ico')
+        myLable = Label(Help, text= "Please insert the area of one PV module. [qm]")
+        myLable.pack()
+        Help.mainloop() 
+        
+def N_k_CBrowseClick():   # defining button for description of "Power from Grid"
+        Help = Tk()
+        Help.title('User_Input')
+        Help.geometry('500x100')
+        Help.iconbitmap(r'Femtec_Logo_icon.ico')
+        myLable = Label(Help, text= "How much power can be drawn from the grid constantly? [kWh]")
+        myLable.pack()
+        Help.mainloop() 
+        
+        
+def WT_CBrowseClick():     # defining button for description of "Requirement of WT"
+        Help = Tk()
+        Help.title('User_Input')
+        Help.geometry('500x100')
+        Help.iconbitmap(r'Femtec_Logo_icon.ico')
+        myLable = Label(Help, text= "Do you want to include windturbines? Please select one.")
+        myLable.pack()
+        Help.mainloop()
+        
+        
+def Y_CBrowseClick():     # defining button for description of "Requirement of combination of PV and  WT"
+        Help = Tk()
+        Help.title('User_Input')
+        Help.geometry('500x100')
+        Help.iconbitmap(r'Femtec_Logo_icon.ico')
+        myLable = Label(Help, text= "Do you want to combine PV modules and windturbines?")
+        myLable.pack()
+        Help.mainloop()
+        
+def A_CBrowseClick():     # defining button for description of "No of WT "
+        Help = Tk()
+        Help.title('User_Input')
+        Help.geometry('500x100')
+        Help.iconbitmap(r'Femtec_Logo_icon.ico')
+        myLable = Label(Help, text= "Maximum number of wind turbines to be installed when combinating PV and wind turbine systems. [-]")
+        myLable.pack()
+        Help.mainloop()
+        
+def Year_CBrowseClick():     # defining button for description of "No of Max Year "
+        Help = Tk()
+        Help.title('User_Input')
+        Help.geometry('500x100')
+        Help.iconbitmap(r'Femtec_Logo_icon.ico')
+        myLable = Label(Help, text= "How many years should be taken into account for the calculation of the mean meteorological year? (Max. 11 years)")
+        myLable.pack()
+        Help.mainloop()
+        
+        
+        
+
+# Saving User Info
+Location_data =LabelFrame(frame, text="Location data")      #Creating Location grid in the GUI
+Location_data.grid(row= 0, column=0, padx=30, pady=10)
+
+breitengrad_gui = Label(Location_data, text="Latitude [°]")     # importing Location data using GUI
+breitengrad_gui.grid(row=0, column=0)
+längengrad_gui = Label(Location_data, text="Longitude [°]")
+längengrad_gui.grid(row=0, column=1)
+jahre_gui = Label(Location_data, text="Years (Max.11 years) [-]")
+jahre_gui.grid(row=0, column=2)
+
+first_name_entry = Entry(Location_data)
+last_name_entry = Entry(Location_data)
+jahre_entry = Entry(Location_data)
+first_name_entry.grid(row=1, column=0)
+last_name_entry.grid(row=1, column=1)
+jahre_entry.grid(row=1, column=2)
+
+Location_data.btnIn_Year = Button(Location_data, text='...', command=Year_CBrowseClick)
+Location_data.btnIn_Year.grid(row=0, column=3)
+
+#Creating Battery data grid in the GUI
+Battery_data = LabelFrame(frame, text="Battery data")
+Battery_data.grid(row=1, column=0, sticky="news", padx=30, pady=10)
+
+N_c_gui = Label(Battery_data, text="Charges needed in 24h [-]")
+N_c_gui.grid(row=0, column=0)
+N_g_gui = Label(Battery_data, text="Grid availability [kVA]") 
+N_g_gui.grid(row=0, column=2)
+N_t_gui = Label(Battery_data, text="Energy required per truck [kWh]")
+N_t_gui.grid(row=0, column=4)
+
+#creating buttons for the description of battery data 
+Battery_data.btnIn_N_C = Button(Battery_data, text='...', command=btnInN_CBrowseClick)
+Battery_data.btnIn_N_C.grid(row=0, column=1)
+
+Battery_data.btnIn_N_g = Button(Battery_data, text='...', command=btnInN_gBrowseClick)
+Battery_data.btnIn_N_g.grid(row=0, column=3)
+
+Battery_data.btnIn_N_t = Button(Battery_data, text='...', command=btnInN_tBrowseClick)
+Battery_data.btnIn_N_t.grid(row=0, column=5)
+
+
+N_c_entry = Entry(Battery_data)
+N_g_entry = Entry(Battery_data)
+N_t_entry = Entry(Battery_data)
+N_c_entry.grid(row=1, column=0)
+N_g_entry.grid(row=1, column=2)
+N_t_entry.grid(row=1, column=4)
+
+#PV data
+#Creating PV data grid in the GUI
+PV_data = LabelFrame(frame, text="PV_data")
+PV_data.grid(row=2, column=0, sticky="news", padx=30, pady=10)
+
+eta_gui = Label(PV_data, text="Efficiency of PV module [-]")
+eta_gui.grid(row=0, column=0)
+A_m_gui = Label(PV_data, text="Area of one PV module [qm]")
+A_m_gui.grid(row=0, column=2)
+N_k_gui = Label(PV_data, text="Constant grid support [kWh]")
+N_k_gui.grid(row=0, column=4)
+
+
+#creating buttons for the description of PV data 
+PV_data.btnIn_eta = Button(PV_data, text='...', command=eta_CBrowseClick)
+PV_data.btnIn_eta.grid(row=0, column=1)
+
+
+PV_data.btnIn_A_m = Button(PV_data, text='...', command=A_m_CBrowseClick)
+PV_data.btnIn_A_m.grid(row=0, column=3)
+
+
+PV_data.btnIn_N_k = Button(PV_data, text='...', command=N_k_CBrowseClick)
+PV_data.btnIn_N_k.grid(row=0, column=5)
+
+
+eta_entry = Entry(PV_data)
+A_m_entry = Entry(PV_data)
+eta_entry.grid(row=1, column=0)
+A_m_entry.grid(row=1, column=2)
+N_k_entry = Entry(PV_data)
+N_k_entry.grid(row=1, column=4)
+
+
+# Wind data
+#Creating wind data grid in the GUI
+Wind_data = LabelFrame(frame, text="Wind data")
+Wind_data.grid(row=3, column=0, sticky="news", padx=30, pady=10)
+
+WT_gui = Label(Wind_data, text="Include windturbines?")
+WT_gui.grid(row=0, column=0)
+R_gui = Label(Wind_data, text="Combine PV and WT?")
+R_gui.grid(row=0, column=2)
+A_gui = Label(Wind_data, text="Number of WT (max. value) [-]")
+A_gui.grid(row=0, column=4)
+
+#creating buttons for the description of wind data 
+Wind_data.btnIn_WT = Button(Wind_data, text='...', command=WT_CBrowseClick)
+Wind_data.btnIn_WT.grid(row=0, column=1)
+
+Wind_data.btnIn_Y = Button(Wind_data, text='...', command=Y_CBrowseClick)
+Wind_data.btnIn_Y.grid(row=0, column=3)
+
+Wind_data.btnIn_A = Button(Wind_data, text='...', command=A_CBrowseClick)
+Wind_data.btnIn_A.grid(row=0, column=5)
+
+WT_entry_Combobox = ttk.Combobox(Wind_data, values=["No", "VAWT 3kW", "HAWT 7.5kW", "HAWT 10kW", "HAWT 3.3MW" ])
+R_entry_Combobox = ttk.Combobox(Wind_data, values=["No", "Yes"])
+A_entry = Entry(Wind_data)
+WT_entry_Combobox.grid(row=1, column=0)
+R_entry_Combobox.grid(row=1, column=2)
+A_entry.grid(row=1, column=4)
+
+
+
+#Create a Button to validate Entry Widget
+button = Button(Input_user, text= "Calculate",width= 20, command= submit).pack(pady=20)
+
+#closing the gui
+Input_user.mainloop()
 
 
 
